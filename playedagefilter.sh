@@ -17,7 +17,7 @@ Specify input database FILE of rated tracks, POPMCOL (FILE column number contain
 and TIMECOL (FILE column number with last played dates expressed as numerical sql or epoch 
 time-values)
 
-Filters rated tracks FILE based on last-played-date and outputs to a database file of 
+Filters rated-tracks FILE, based on last-played-date, and outputs results to a database file of 
 not-recently-played tracks, which can then be used by other tools for playlist creation. 
 Recently played tracks, ineligible for playlist inclusion, are filtered out using different 
 thresholds. Thresholds are set based on repeat frequency needed for a given rating (POPM 

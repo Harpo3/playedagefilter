@@ -8,6 +8,7 @@ Usage: playedagefilter.sh [option] FILE POPMCOL TIMECOL
 
 options:
 -d specify delimiter (default: ^)
+-g specify lastplayed group age thresholds (6 ordered group values, in days, separated by commas)
 -h display this help file
 -n exclude output file header where input file contains header
 -o specify output file and path (default: $HOME/.timefiltered.dsv)
@@ -26,7 +27,8 @@ range) group. For example, five star tracks (POPM 230-255) might be repeated eve
 while four star tracks only every 180. So, five star tracks played within the last 50 days
 would be filtered out, and so on for other groups. 
 
-Revise group variables for days in the script as needed to make output more or less restrictive.
+Revise group variables for days in the script as needed to make output more or less restrictive, by
+using comma-separated values with the option, like: -g 40,190,315,920,1430,1525.
 
 Defaults:
 Rating group last played age (in days):
@@ -36,7 +38,7 @@ group3=305 #(popularimeter 166-191)
 group4=910 #(popularimeter 136-165)
 group5=1460 #(popularimeter 64-135)
 
-The five popularimeter (POPM) high and low ranges may also be modified in the script, if needed.
+The five popularimeter (POPM) high and low ranges may be modified in the script, if needed.
 
 EOF
 }
@@ -66,10 +68,21 @@ excludeheader="no"
 outputfile=$"$HOME/.timefiltered.dsv"
 # 
 # Use getops to set any user-assigned options
-while getopts ":d:hno:t" opt; do
+while getopts ":d:g:hno:t" opt; do
   case $opt in
     d)
       mydelimiter=$OPTARG 
+      ;;
+    g )
+      set -f # disable glob
+      IFS=',' # split on commas
+      array=($OPTARG)
+      group1=${array[0]} #(popularimeter 230-255)
+      group2=${array[1]} #(popularimeter 192-229)
+      group3=${array[2]} #(popularimeter 166-191)
+      group4=${array[3]} #(popularimeter 136-165)
+      group5=${array[4]} #(popularimeter 110-135)
+      group6=${array[5]} #(popularimeter 64-109) # use the split+glob operator
       ;;
     h) 
       print_help

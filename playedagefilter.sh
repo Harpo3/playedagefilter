@@ -22,44 +22,58 @@ Uses awk to filter rated-tracks FILE, based on last-played-date, and outputs res
 not-recently-played tracks, which can then be used by other tools for playlist creation. Used
 when POPM and last-played data are included in the input database.
 Recently played tracks, ineligible for playlist inclusion, are filtered out using different 
-thresholds. Thresholds are set based on repeat frequency needed for a given rating (POPM 
-range) group. For example, five star tracks (POPM 230-255) might be repeated every 50 days,
+thresholds. 
+
+Sets five rating groups based on popularimeter (POPM) values, and rating values used by 
+Kid3, Windows Media Player, and Winamp:
+
+Group        Rating Stars    POPM      POPM Range Assumed
+1            One             1         1-32
+2            Two             64        33-96 
+3            Three           128       97-160
+4            Four            196       161-228
+5            Five            255       229-255
+
+
+Thresholds are set based on repeat frequency needed for a given rating (POPM 
+range) group. For example, five star tracks (POPM 239-255) might be repeated every 50 days,
 while four star tracks only every 180. So, five star tracks played within the last 50 days
 would be filtered out, and so on for other groups. 
 
-Revise group variables for days in the script as needed to make output more or less restrictive, by
-using comma-separated values with the option, like: -g 40,190,315,920,1430,1525.
+Revise group age thresholds for days as needed to make output more or less restrictive; use
+comma-separated values, higher age thresholds for lower rated tracks, and vice versa; 
+use the '-g' option flag, such as: -g 1525,1430,920,315,190,40 
 
-Defaults:
-Rating group last played age (in days):
-group1=50 #(popularimeter 230-255)
-group2=180 #(popularimeter 192-229)
-group3=305 #(popularimeter 166-191)
-group4=910 #(popularimeter 136-165)
-group5=1460 #(popularimeter 64-135)
+Default ages by rating group:
+last played age threshold (in days):
+group1=1460 #(popularimeter 1-32)
+group2=910 #(popularimeter 33-96)
+group3=305 #(popularimeter 97-160)
+group4=180 #(popularimeter 161-228)
+group5=50 #(popularimeter 229-255)
 
 The five popularimeter (POPM) high and low ranges may be modified in the script, if needed.
 
 EOF
 }
 # Rating group last played age (in days):
-group1=50 #(popularimeter 230-255)
-group2=180 #(popularimeter 192-229)
-group3=305 #(popularimeter 166-191)
-group4=910 #(popularimeter 136-165)
-group5=1500 #(popularimeter 64-135)
+group1=1460 #(popularimeter 1-32) One Star
+group2=910 #(popularimeter 33-96) Two Stars
+group3=305 #(popularimeter 97-160) Three Stars
+group4=180 #(popularimeter 161-228) Four Stars
+group5=50 #(popularimeter 229-255) Five Stars
 # POPM low ranges
-group1low=230 #(popularimeter 230-255)
-group2low=192 #(popularimeter 192-229)
-group3low=166 #(popularimeter 166-191)
-group4low=136 #(popularimeter 136-165)
-group5low=64 #(popularimeter 64-135)
+group1low=1 #(popularimeter 1-32)
+group2low=33 #(popularimeter 33-96)
+group3low=97 #(popularimeter 97-160)
+group4low=161 #(popularimeter 161-228)
+group5low=229 #(popularimeter 110-135)
 # POPM high ranges
-group1high=255 #(popularimeter 230-255)
-group2high=229 #(popularimeter 192-229)
-group3high=191 #(popularimeter 166-191)
-group4high=165 #(popularimeter 136-165)
-group5high=135 #(popularimeter 64-135)
+group1high=32 #(popularimeter 1-32)
+group2high=96 #(popularimeter 33-96)
+group3high=160 #(popularimeter 97-160)
+group4high=228 #(popularimeter 161-228)
+group5high=255 #(popularimeter 229-255)
 #
 # Default time value of LastPlayedDate field is numerical SQL time but user may specify "epoch"
 timeformat="sql"
@@ -77,12 +91,11 @@ while getopts ":d:g:hno:t" opt; do
       set -f # disable glob
       IFS=',' # split on commas
       array=($OPTARG)
-      group1=${array[0]} #(popularimeter 230-255)
-      group2=${array[1]} #(popularimeter 192-229)
-      group3=${array[2]} #(popularimeter 166-191)
-      group4=${array[3]} #(popularimeter 136-165)
-      group5=${array[4]} #(popularimeter 110-135)
-      group6=${array[5]} #(popularimeter 64-109) # use the split+glob operator
+      group1=${array[0]} #(popularimeter 1-32) One Star
+      group2=${array[1]} #(popularimeter 33-96) Two Stars
+      group3=${array[2]} #(popularimeter 97-160) Three Stars
+      group4=${array[3]} #(popularimeter 161-228) Four Stars
+      group5=${array[4]} #(popularimeter 229-255) Five Stars  
       ;;
     h) 
       print_help

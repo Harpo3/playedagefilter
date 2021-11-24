@@ -220,10 +220,10 @@ fi
 if [[ $timeformat == "epoch" ]] 
 then
     {
-    awk -F "$mydelimiter" "{ if (""$popmcolnum2"" >= ""$group1low"" && ""$popmcolnum2"" <= ""$group1high"" && ""$timecolnum2"" <= ""$group1epochth"") { print } }" "$myrated"
-    awk -F "$mydelimiter" "{ if (""$popmcolnum2"" >= ""$group2low"" && ""$popmcolnum2"" <= ""$group2high"" && ""$timecolnum2"" <= ""$group2epochth"") { print } }" "$myrated"
-    awk -F "$mydelimiter" "{ if (""$popmcolnum2"" >= ""$group3low"" && ""$popmcolnum2"" <= ""$group3high"" && ""$timecolnum2"" <= ""$group3epochth"") { print } }" "$myrated"
-    awk -F "$mydelimiter" "{ if (""$popmcolnum2"" >= ""$group4low"" && ""$popmcolnum2"" <= ""$group4high"" && ""$timecolnum2"" <= ""$group4epochth"") { print } }" "$myrated"
-    awk -F "$mydelimiter" "{ if (""$popmcolnum2"" >= ""$group5low"" && ""$popmcolnum2"" <= ""$group5high"" && ""$timecolnum2"" <= ""$group5epochth"") { print } }" "$myrated"    
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group1low" -v gh="$group1high" -v tcol="$timecolnum" -v ep="$group1epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated"
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group2low" -v gh="$group2high" -v tcol="$timecolnum" -v ep="$group2epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated"
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group3low" -v gh="$group3high" -v tcol="$timecolnum" -v ep="$group3epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated"
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group4low" -v gh="$group4high" -v tcol="$timecolnum" -v ep="$group4epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated"
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group5low" -v gh="$group5high" -v tcol="$timecolnum" -v ep="$group5epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated"
     } >> "$outputfile"
 fi

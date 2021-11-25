@@ -102,8 +102,8 @@ if [[ -f "$configfile" ]]
 then
     # run security checks on config file and remove any potential malicious code
     # remove any character in file not specific to letters, numbers and equal sign used
-    sed -i 's/[^a,c,e,g,h,i,l,m,n,o,p,r,t,u,w,x,=,0-9]//g' $configfile
-    sed -i -e '/^[^gpt]/d' $configfile # remove all lines with a first letter not g,p, or t    
+    sed -i 's/[^a,c,e,g,h,i,l,m,n,o,p,r,s,t,u,w,x,=,0-9]//g' $configfile
+    sed -i -e '/^[^agpt]/d' $configfile # remove all lines with a first letter not a,g,p, or t    
     sed -i -r '/^.{,8}$/d' $configfile # remove all lines that are not 9-17 characters long
     sed -i '/^.\{17\}./d' $configfile   
     sed -i '/=[0-9]/!d' $configfile # remove all lines w/ no equal sign followed by a number 

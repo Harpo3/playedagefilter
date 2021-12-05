@@ -127,7 +127,7 @@ while getopts ":d:g:hi:l:no:tu:v:" opt; do
   case $opt in
     d)
       mydelimiter=$OPTARG ;;
-    g ) #echo "Run Numbers - argument = $OPTARG "
+    g ) 
         set -f # disable glob
         IFS=',' # split on commas
         array1=($OPTARG)
@@ -150,7 +150,7 @@ while getopts ":d:g:hi:l:no:tu:v:" opt; do
       outputfile=$OPTARG ;;
     t)      
       timeformat="epoch" ;;
-    u) #echo "Run Numbers - argument = $OPTARG "
+    u) 
       set -f # disable glob
       IFS=',' # split on commas
       array2=($OPTARG)
@@ -160,7 +160,7 @@ while getopts ":d:g:hi:l:no:tu:v:" opt; do
       group4low=${array2[3]} #(popularimeter 161-228) Four Stars
       group5low=${array2[4]} #(popularimeter 229-255) Five Stars      
       ;;
-    v) #echo "Run Numbers - argument = $OPTARG "
+    v)
       set -f # disable glob
       IFS=',' # split on commas
       array3=($OPTARG)
@@ -179,7 +179,7 @@ while getopts ":d:g:hi:l:no:tu:v:" opt; do
   esac
 done
 shift $((OPTIND-1))
-#Look up column number for Rating and LastPlayedDate from musicbase db if not stored in config file
+#Look up column number for Rating and LastTimePlayed from musicbase db if not stored in config file
 if [ -n "$musicdb" ] && [[ $popmcolnum == "" ]] && [[ $timecolnum == "" ]]
 then
     popmcolnum=$(echo $(head -1 $musicdb | tr '^' '\n' | cat -n | grep "Rating") | sed -r 's/^([^.]+).*$/\1/; s/^[^0-9]*([0-9]+).*$/\1/')

@@ -243,15 +243,13 @@ then
 fi
 if [[ $timeformat == "epoch" ]] && [[ $convertfromsql == 1 ]]
 then
-    echo "This will take time for conversion from sql to epoch time"
+    echo "It will take time for conversion from sql to epoch time..please wait"
     cat /dev/null > "$myrated2"
     while read -r line 
     do 
         # epoch is selected and the source file is sql, requiring conversion to epoch        
         valuereplace=$(echo "$line" | cut -f $timecolnum -d "^")
         epochval="$(printf "%.0f \n" "$(echo "($valuereplace-25569)*86400" | bc -l)")"
-        #echo "$line"
-        #echo "valuereplace $valuereplace epochval $epochval" 
         echo $line > .tmp.txt
         sed "s,$valuereplace,$epochval,g" .tmp.txt >> "$myrated2"
     done < <(tail -n +2 "$myrated")

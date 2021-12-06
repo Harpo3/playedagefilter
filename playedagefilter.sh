@@ -16,7 +16,7 @@ options:
 -l specify library database containing headers (default: $HOME/.musiclib.dsv)
 -n exclude output file header where input file contains header
 -o specify output file and path (default: $HOME/.ratingandtime.dsv)
--t use epoch time as numerical date-value type when epoch is type used in FILE (default is sql)
+-t use epoch time as numerical date-value type (default is sql)
 -u specify POPM low ranges (5 ordered group values, from lowest to highest rated, separated by commas)
    (default: 1,33,97,161,229); used to override defaults and configuration file settings 
 -v specify POPM high ranges (5 ordered group values, from lowest to highest rated, separated by commas)
@@ -120,6 +120,7 @@ timeformat="sql"
 mydelimiter="^"
 excludeheader="no"
 myrated="$HOME/.popmfiltered.dsv"
+myrated2="$HOME/.popmfiltered2.dsv"
 outputfile=$"$HOME/.ratingandtime.dsv"
 musicdb=$"$HOME/.musiclib.dsv"
 # Use getops to set any user-assigned options
@@ -190,18 +191,37 @@ timecolnum2="\$""$timecolnum"
 currepochtime="$(date +%s)"
 currsqldec="$(printf "%.6f \n" "$(echo "$currepochtime/86400 + 25569"| bc -l)")"
 currsqltime="$(echo ${currsqldec%.*})"
-# epoch threshold values
-group1epochth=$(( currepochtime - (group1 * 86400) ))
-group2epochth=$(( currepochtime - (group2 * 86400) ))
-group3epochth=$(( currepochtime - (group3 * 86400) ))
-group4epochth=$(( currepochtime - (group4 * 86400) ))
-group5epochth=$(( currepochtime - (group5 * 86400) ))
-# sql threshold values
-group1sqlth=$(( currsqltime - group1 ))
-group2sqlth=$(( currsqltime - group2 ))
-group3sqlth=$(( currsqltime - group3 ))
-group4sqlth=$(( currsqltime - group4 ))
-group5sqlth=$(( currsqltime - group5 ))
+convertfromsql=0
+if [[ $timeformat == "sql" ]] 
+then
+    # sql threshold values
+    group1sqlth=$(( currsqltime - group1 ))
+    group2sqlth=$(( currsqltime - group2 ))
+    group3sqlth=$(( currsqltime - group3 ))
+    group4sqlth=$(( currsqltime - group4 ))
+    group5sqlth=$(( currsqltime - group5 ))
+fi
+if [[ $timeformat == "epoch" ]] 
+then
+    # epoch threshold values
+    group1epochth=$(( currepochtime - (group1 * 86400) ))
+    #echo "group1epochth: $group1epochth"
+    group2epochth=$(( currepochtime - (group2 * 86400) ))
+    #echo "group2epochth: $group2epochth"
+    group3epochth=$(( currepochtime - (group3 * 86400) ))
+    #echo "group3epochth: $group3epochth"
+    group4epochth=$(( currepochtime - (group4 * 86400) ))
+    #echo "group4epochth: $group4epochth"
+    group5epochth=$(( currepochtime - (group5 * 86400) ))
+    #echo "group5epochth: $group5epochth"
+    # check source file to determine if sql or epoch is used
+    datetest="$(cat $myrated | sed -n '2p')"
+    linetxtdate=$(printf '%s\n' "$(echo "$datetest" | cut -f "$timecolnum" -d "^")")
+    #echo "linetxtdate $linetxtdate"
+    if [[ "$linetxtdate" == *"."* ]]; then
+    convertfromsql=1
+    fi
+fi
 cat /dev/null > "$outputfile"
 if [[ $excludeheader == "no" ]] 
 then
@@ -217,7 +237,7 @@ then
     awk -F "^" -v pcol="$popmcolnum" -v gl="$group5low" -v gh="$group5high" -v tcol="$timecolnum" -v sq="$group5sqlth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= sq)) { print }}' "$myrated"
     } >> "$outputfile"
 fi
-if [[ $timeformat == "epoch" ]] 
+if [[ $timeformat == "epoch" ]] && [[ $convertfromsql == 0 ]]
 then
     {
     awk -F "^" -v pcol="$popmcolnum" -v gl="$group1low" -v gh="$group1high" -v tcol="$timecolnum" -v ep="$group1epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated"
@@ -227,3 +247,32 @@ then
     awk -F "^" -v pcol="$popmcolnum" -v gl="$group5low" -v gh="$group5high" -v tcol="$timecolnum" -v ep="$group5epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated"
     } >> "$outputfile"
 fi
+if [[ $timeformat == "epoch" ]] && [[ $convertfromsql == 1 ]]
+then
+    echo "This will take time for conversion from sql to epoch time"
+    #read -r # skip header
+    cat /dev/null > "$myrated2"
+    while read -r line 
+    do 
+        # epoch is selected and the source file is sql, requiring conversion to epoch        
+        valuereplace=$(echo "$line" | cut -f $timecolnum -d "^")
+        epochval="$(printf "%.0f \n" "$(echo "($valuereplace-25569)*86400" | bc -l)")"
+        #echo "$line"
+        #echo "valuereplace $valuereplace epochval $epochval" 
+        echo $line > .tmp.txt
+        sed "s,$valuereplace,$epochval,g" .tmp.txt >> "$myrated2"
+    done < <(tail -n +2 "$myrated")
+fi
+if [[ $timeformat == "epoch" ]] && [[ $convertfromsql == 1 ]]
+then
+    {
+    # epoch is selected and the source file was converted to epoch    
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group1low" -v gh="$group1high" -v tcol="$timecolnum" -v ep="$group1epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated2"
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group2low" -v gh="$group2high" -v tcol="$timecolnum" -v ep="$group2epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated2"
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group3low" -v gh="$group3high" -v tcol="$timecolnum" -v ep="$group3epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated2"
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group4low" -v gh="$group4high" -v tcol="$timecolnum" -v ep="$group4epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated2"
+    awk -F "^" -v pcol="$popmcolnum" -v gl="$group5low" -v gh="$group5high" -v tcol="$timecolnum" -v ep="$group5epochth" '{ if (($pcol >= gl)&&($pcol <= gh)&&($tcol <= ep)) { print }}' "$myrated2"    
+    } >> "$outputfile"
+fi
+rm -f "$myrated2"
+rm -f .tmp.txt

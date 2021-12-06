@@ -205,19 +205,13 @@ if [[ $timeformat == "epoch" ]]
 then
     # epoch threshold values
     group1epochth=$(( currepochtime - (group1 * 86400) ))
-    #echo "group1epochth: $group1epochth"
     group2epochth=$(( currepochtime - (group2 * 86400) ))
-    #echo "group2epochth: $group2epochth"
     group3epochth=$(( currepochtime - (group3 * 86400) ))
-    #echo "group3epochth: $group3epochth"
     group4epochth=$(( currepochtime - (group4 * 86400) ))
-    #echo "group4epochth: $group4epochth"
     group5epochth=$(( currepochtime - (group5 * 86400) ))
-    #echo "group5epochth: $group5epochth"
     # check source file to determine if sql or epoch is used
     datetest="$(cat $myrated | sed -n '2p')"
     linetxtdate=$(printf '%s\n' "$(echo "$datetest" | cut -f "$timecolnum" -d "^")")
-    #echo "linetxtdate $linetxtdate"
     if [[ "$linetxtdate" == *"."* ]]; then
     convertfromsql=1
     fi
@@ -250,7 +244,6 @@ fi
 if [[ $timeformat == "epoch" ]] && [[ $convertfromsql == 1 ]]
 then
     echo "This will take time for conversion from sql to epoch time"
-    #read -r # skip header
     cat /dev/null > "$myrated2"
     while read -r line 
     do 
